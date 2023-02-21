@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isRecording = false;
     let selectedDeviced = null;
     let mediaRecorder = null;
+    let startTime = null;
     let chucks = [];
 
     // Get available devices
@@ -54,13 +55,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (recording) {
             mediaRecorder.stop();
         } else {
+
+
+
             navigator.mediaDevices.getUserMedia({
                 audio: {
                     deviceId: selectedDeviced
                 }, video: false
             }).then(stream => {
+
+
                 mediaRecorder = new MediaRecorder(stream)
                 mediaRecorder.start();
+                startTime = Date.now();
+                updateDisplay();
                 mediaRecorder.ondataavailable = (event) => {
                     chucks.push(event.data);
                 }
@@ -74,8 +82,34 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveData() {
         const blob = new Blob(chucks, { "type": "audio/webm;codecs=oputs" });
 
+
         console.log(blob);
+        document.querySelector('#audio').src = URL.createObjectURL(blob);
         chucks = [];
+    }
+
+    function updateDisplay() {
+        display.innerHTML = durationTimestamp(Date.now() - startTime);
+        if (isRecording) {
+            window.requestAnimationFrame(updateDisplay);
+        }
+    }
+
+    function durationTimestamp(duration) {
+
+        let mili = parseInt((duration % 1000)/100)
+        let seconds = Math.floor((duration / 1000) % 60);
+        let minutes = Math.floor((duration / 1000 / 60) % 60);
+        let hours = Math.floor(duration / 1000 / 60 / 60);
+
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        hours = hours < 10 ? "0" + hours : hours;
+
+
+        return `${hours}:${minutes}:${seconds}:${mili}`
+
+
     }
 
 
