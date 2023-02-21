@@ -8,20 +8,22 @@ const isMac = process.platform === 'darwin' ? true : false;
 
 function createWindow() {
     const win = new BrowserWindow({
-        width: 600,
-        height: 600,
-        icon: path.join(__dirname, "assets", "icon", "progBR.png"),
-        backgroundColor: "#123",
+        width: isDev ? 950 : 500,
+        height: 300,
+        resizable: isDev ? true : false,
+        icon: path.join(__dirname, "assets", "icon", "icon.png"),
+        backgroundColor: "#234",
         show: false,
         webPreferences: {
             nodeIntegration: true,
             preload: path.join(__dirname, 'src', 'preload.js')
         }
     });
-    win.loadFile("./src/index.html");
+    win.loadFile("./src/mainWindow/index.html");
     if (isDev) {
         win.webContents.openDevTools();
     }
+
     win.once('ready-to-show', () => {
         win.show();
         setTimeout(() => {
@@ -30,27 +32,16 @@ function createWindow() {
         }, 3000)
 
         const menuTemplate = [
-            { role: 'appMenu' },
-            { role: 'fileMenu' },
+            { label: app.name,
+                submenu:[
+                    {label:"Preferences",click:()=>{}},
+                    {label:"Open destination folder",click:()=>{}}
+                ]
+            },
             {
-                label: 'fileMenu', submenu: [
-                    {
-                        label: 'New Window', click: () => {
-                            createWindow();
-                        }
-                    },
-                    {
-                        type: 'separator'
-                    },
-                    {
-                        label: 'Close all windows',
-                        accelerator: 'CmdOrCtrl+a',
-                        click: () => {
-                            console.log('ra')
-                            BrowserWindow.getAllWindows().forEach(window => window.close())
-                        }
-
-                    }
+                label: 'File', 
+                submenu: [
+                    isMac ? {role:"close"}: {role: "quit"}
                 ]
             },
         ];
@@ -61,15 +52,10 @@ function createWindow() {
 
 app.whenReady().then(() => {
     createWindow();
-    console.log(os.cpus()[0].model)
-    globalShortcut.register('CmdOrCtrl+d', () => {
-        console.log("Atalho Global")
-        BrowserWindow.getAllWindows()[0].setAlwaysOnTop(true)
-        BrowserWindow.getAllWindows()[0].setAlwaysOnTop(false)
-    })
+      
 })
 
-app.on('will-quit',()=>{
+app.on('will-quit', () => {
     globalShortcut.unregisterAll();
 })
 
