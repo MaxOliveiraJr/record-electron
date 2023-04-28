@@ -1,12 +1,14 @@
 const { app, BrowserWindow, ipcMain, Menu, globalShortcut } = require('electron');
 const path = require('path')
 const os = require("os");
+const fs =  require('fs');
+let destination = path.join(os.homedir(),'audios');
 
 const isDev = process.env.NODE_DEV !== undefined && process.env.NODE_DEV === "development" ? true : false;
 
 const isMac = process.platform === 'darwin' ? true : false;
 
-function createWindow() {
+async function createWindow() {
     const win = new BrowserWindow({
         width: isDev ? 950 : 500,
         height: 300,
@@ -15,8 +17,10 @@ function createWindow() {
         backgroundColor: "#234",
         show: false,
         webPreferences: {
-            nodeIntegration: true,
-            preload: path.join(__dirname, 'src', 'preload.js')
+            nodeIntegration: false, // is default value after Electron v5
+            contextIsolation: true, // protect against prototype pollution
+            enableRemoteModule: false, // turn off remote
+            preload: path.join(__dirname, "src/preload.js") // use a preload script
         }
     });
     win.loadFile("./src/mainWindow/index.html");
@@ -76,4 +80,10 @@ app.on('activate', () => {
 
 ipcMain.on('open_new_window', () => {
     createWindow();
+})
+
+
+ipcMain.on("save_buffer",(e,buffer)=>{
+    const filePath = path.join(destination,`${Date.now()}`);
+    fs.writeFileSync(`${filePath}.webm`,buffer);
 })

@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    const { ipcRenderer } = require('electron');
     const display = document.querySelector('#display');
     const record = document.querySelector('#record');
     const micInput = document.querySelector('#mic');
@@ -82,6 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveData() {
         const blob = new Blob(chucks, { "type": "audio/webm;codecs=oputs" });
 
+        blob.arrayBuffer().then(bloBuffer => {
+            const buffer = new Buffer(bloBuffer, "binary");
+            ipcRender.send('save_buffer', buffer);
+        })
+
+
 
         console.log(blob);
         document.querySelector('#audio').src = URL.createObjectURL(blob);
@@ -97,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function durationTimestamp(duration) {
 
-        let mili = parseInt((duration % 1000)/100)
+        let mili = parseInt((duration % 1000) / 100)
         let seconds = Math.floor((duration / 1000) % 60);
         let minutes = Math.floor((duration / 1000 / 60) % 60);
         let hours = Math.floor(duration / 1000 / 60 / 60);
